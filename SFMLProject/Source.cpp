@@ -3,7 +3,7 @@
 #include "SFML/Graphics.hpp"
 
 const int FRAMERATE = 60;
-constexpr unsigned short FRAME_DURATION = int(1000000 / FRAMERATE);
+constexpr unsigned int FRAME_DURATION = int(1000000 / FRAMERATE);
 
 int main() {
 	unsigned lag = 0;
