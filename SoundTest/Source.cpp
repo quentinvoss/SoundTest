@@ -3,10 +3,12 @@
 #include <thread>
 #include <chrono>
 #include <cctype>
+#include <unordered_map>
+#include <stdexcept>
 
 constexpr int INT16LIMIT = 32767;
 constexpr double PI = 3.1415926;
-constexpr double MORSE_TIME_UNIT = 0.25;
+constexpr double MORSE_TIME_UNIT = 0.05;
 constexpr double MORSE_FREQUENCY = 600;
 
 /*
@@ -29,11 +31,10 @@ std::vector<std::int16_t> getFrequencySamples(double frequency,double duration =
 	samplesNum = std::max(int(samplesPerCycle), samplesNum);
 	samplesNum = std::round(double(samplesNum) / samplesPerCycle) * samplesPerCycle;
 	for (int i = 0; i < samplesNum; i++) {
-		double sinVal = std::cos(double(i) * stepSize);
+		double sinVal = std::sin(double(i) * stepSize);
 		std::int16_t temp = sinVal * volume;
 		output.push_back(temp);
 	}
-	output.push_back(0);
 	return output;
 }
 
@@ -43,6 +44,38 @@ struct sound {
 };
 
 std::vector<sound> letterToMorseTimings(char c) {
+	// Morse code representations for special characters
+	std::unordered_map<char, const char*> specialChars;
+	specialChars['0'] = "-----";
+	specialChars['1'] = ".----";
+	specialChars['2'] = "..---";
+	specialChars['3'] = "...--";
+	specialChars['4'] = "....-";
+	specialChars['5'] = ".....";
+	specialChars['6'] = "-....";
+	specialChars['7'] = "--...";
+	specialChars['8'] = "---..";
+	specialChars['9'] = "----.";
+
+	specialChars['.'] = ".-.-.-";
+	specialChars[','] = "--..--";
+	specialChars['?'] = "..--..";
+	specialChars['!'] = "-.-.--";
+	specialChars['/'] = "-..-.";
+	specialChars['('] = "-.--.";
+	specialChars[')'] = "-.--.-";
+	specialChars['&'] = ".-...";
+	specialChars[':'] = "---...";
+	specialChars[';'] = "-.-.-.";
+	specialChars['='] = "-...-";
+	specialChars['+'] = ".-.-.";
+	specialChars['-'] = "-....-";
+	specialChars['_'] = "..--.-";
+	specialChars['"'] = ".-..-.";
+	specialChars['$'] = "...-..-";
+	specialChars['@'] = ".--.-.";
+	specialChars['\''] = ".----.";
+
 	// Morse code representations for A-Z (lowercase index c-'a')
 	static const char* codes[26] = {
 		".-",    // a
@@ -78,15 +111,25 @@ std::vector<sound> letterToMorseTimings(char c) {
 	if (c == ' ') {
 		// Word gap: 7 units of silence
 		timings.push_back({ 7.0 * MORSE_TIME_UNIT,1 });
+		std::cout << " /   ";
 		return timings;
 	}
 
-	char lc = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-	if (lc < 'a' || lc > 'z') {
-		return timings; // unsupported char -> empty timings
-	}
+	const char* code = nullptr;
 
-	const char* code = codes[lc - 'a'];
+	if (specialChars.find(c) != specialChars.end()) {
+		code = specialChars[c];
+	}
+	else {
+
+		char lc = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+		if (lc < 'a' || lc > 'z') {
+			throw std::invalid_argument(std::string(1,c));
+		}
+
+		code = codes[lc - 'a'];
+	}
+	std::cout << code << "  ";
 	for (size_t i = 0; code[i] != '\0'; ++i) {
 		char sym = code[i];
 		// Beep duration: dot=1, dash=3
@@ -135,14 +178,21 @@ int main() {
 	*/
 
 	for (;;) {
-		std::cout << "Enter your message: ";
+		std::cout << "\nEnter your message: ";
 		std::string userInput;
 		std::getline(std::cin, userInput);
 		if (userInput.empty()) {
-			std::cout << "Please enter something!\n";
+			std::cout << "Please enter something!";
 			continue;
 		}
-		std::vector<std::int16_t> samples = toMorseCode(userInput);
+		std::vector<std::int16_t> samples;
+		try {
+			samples = toMorseCode(userInput);
+		}
+		catch (std::invalid_argument e) {
+			std::cout << "Unknown character: " << e.what() << " Please try again!";
+			continue;
+		}
 		std::vector<sf::SoundChannel> channels{ sf::SoundChannel::Mono };
 
 		sf::SoundBuffer buffer;
