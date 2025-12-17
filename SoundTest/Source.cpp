@@ -170,7 +170,7 @@ int main() {
 
 	sf::SoundBuffer buffer;
 
-	if (!buffer.loadFromSamples(samples.data(), samples.size(), 2, 44100, channels)) {
+	if (!buffer.loadFromSamples(samples.data(), samples.size(), 1, 44100, channels)) {
 		std::cerr << "FAILED to load from samples\n";
 	}
 
@@ -197,7 +197,7 @@ int main() {
 
 		sf::SoundBuffer buffer;
 
-		if (!buffer.loadFromSamples(samples.data(), samples.size(), 2, 44100, channels)) {
+		if (!buffer.loadFromSamples(samples.data(), samples.size(), 1, 44100, channels)) {
 			//std::cerr << "FAILED to load from samples\n";
 		}
 
