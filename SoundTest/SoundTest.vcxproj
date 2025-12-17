@@ -22,7 +22,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{8ec128ae-aa10-4136-8a58-bf7146e46bc7}</ProjectGuid>
-    <RootNamespace>SFMLProject</RootNamespace>
+    <RootNamespace>SoundTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
